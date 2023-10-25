@@ -28,3 +28,51 @@ def create_csv(root: Path, pd: pd = pd):
 
     pd.DataFrame(train).to_csv("train.csv", index=False)
     pd.DataFrame(test).to_csv("test.csv", index=False)
+
+
+class AlzheimerDataset(Dataset):
+    """ Alzheimer Dataset that contains 4 classes """
+    def __init__(self, csv_file, root_dir=None, transform=None, target_transform):
+        """
+        Arguments:
+        ----------
+        csv_file: dataset file in csv format
+        root_dir: root directory to dataset folder if any [DEFAULT: None]
+        transform: any transform if required [DEFAULT: None]
+        """
+        self.csv_file = pd.read_csv(csv_file)
+        self.root_dir = root_dir
+        self.transform = transform
+        self.target_transform = target_transform
+        self.classes = ['MildDemented', 'ModerateDemented', 'NonDemented', 'VeryMildDemented']
+    
+    def __len__(self):
+        """
+        Returns:
+        -------
+        Total number of instances in dataset
+        """
+        return len(self.csv_file)
+
+    def __getitem__(self, idx):
+        """
+        Arguments:
+        ----------
+        idx: index to select the particular instance
+
+        Output:
+        -------
+        tuple (img, label)
+        img: torch image shape (1, 3, 64, 64) (format: [N, C, W, H]) 
+        label: label associated with image
+        """
+        img_path = self.csv_file.iloc[idx, 0]
+        # TODO: img = read_img(img_path)
+        label = self.csv_file.iloc[idx, 1]
+        if self.transform:
+            img = self.transform(img)
+        
+        if self.target_transform:
+            label = self.target_transform(label)
+        return img_path, self.classes.index(label)
+        
