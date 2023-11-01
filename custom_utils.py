@@ -1,4 +1,9 @@
-def create_csv(root: Path, pd: pd = pd):
+from torch.utils.data import Dataset
+from pathlib import Path
+import pandas as pd
+from PIL import Image
+
+def create_csv(root: Path, pd):
     """Creates csv dataset from the given images
     Parameters:
     - root -> Root path of dataset folder
@@ -31,16 +36,16 @@ def create_csv(root: Path, pd: pd = pd):
 
 
 class AlzheimerDataset(Dataset):
-    """ Alzheimer Dataset that contains 4 classes """
-    def __init__(self, csv_file, root_dir=None, transform=None, target_transform):
-        """
-        Arguments:
-        ----------
-        csv_file: dataset file in csv format
-        root_dir: root directory to dataset folder if any [DEFAULT: None]
-        transform: any transform if required [DEFAULT: None]
-        """
-        self.csv_file = pd.read_csv(csv_file)
+    """Alzheimer Dataset that contains 4 classes 
+    Arguments:
+    ----------
+    csv_file: dataset file in csv format
+    root_dir: root directory to dataset folder if any [DEFAULT: None]
+    transform: any transform if required [DEFAULT: None]
+    target_transform: any transform for target feature if required [DEFAULT: None]
+    """
+    def __init__(self, dataframe, root_dir=None, transform=None, target_transform=None):
+        self.dataframe = dataframe
         self.root_dir = root_dir
         self.transform = transform
         self.target_transform = target_transform
@@ -52,7 +57,7 @@ class AlzheimerDataset(Dataset):
         -------
         Total number of instances in dataset
         """
-        return len(self.csv_file)
+        return len(self.dataframe)
 
     def __getitem__(self, idx):
         """
@@ -66,13 +71,15 @@ class AlzheimerDataset(Dataset):
         img: torch image shape (1, 3, 64, 64) (format: [N, C, W, H]) 
         label: label associated with image
         """
-        img_path = self.csv_file.iloc[idx, 0]
-        # TODO: img = read_img(img_path)
-        label = self.csv_file.iloc[idx, 1]
+        img_path = self.dataframe.iloc[idx, 0]
+        # TODO: img = read_img(img_path) from torchvision.io import read_img()..works???
+        img = Image.open(img_path)
+        label = self.dataframe.iloc[idx, 1]
+        
         if self.transform:
             img = self.transform(img)
-        
+
         if self.target_transform:
             label = self.target_transform(label)
-        return img_path, self.classes.index(label)
+        return img, self.classes.index(label)
         
