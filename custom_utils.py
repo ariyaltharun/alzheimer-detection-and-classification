@@ -1,3 +1,4 @@
+import torch
 from torch.utils.data import Dataset
 from pathlib import Path
 import pandas as pd
@@ -82,4 +83,41 @@ class AlzheimerDataset(Dataset):
         if self.target_transform:
             label = self.target_transform(label)
         return img, self.classes.index(label)
-        
+
+
+def save_checkpoint(model, optimizer, epoch, lr, path):
+    """Save Training Checkpoint
+    Purpose:
+    -------
+    Saves training checkpoint in specified path to resume training
+    process when load this saved checkpoint file.
+    
+    Parameters:
+    ----------
+    model: neural network
+    optimizer: optimizer object
+    epoch: no of epoch (hyperparameter)
+    lr: learning rate (hyperparameter)
+    path: path to save the checkpoint dict
+    """
+    checkpoint = {
+        'model_state_dict': model.state_dict(),
+        'optimizer_state_dict': optimizer.state_dict(),
+        'epoch': epoch,
+        'lr': lr
+    }
+    torch.save(checkpoint, path)
+    
+
+def load_checkpoint(path):
+    """Loads checkpoint file
+    Parameters:
+    ----------
+    path: path where the saved checkpoint file is present
+    
+    Output:
+    ------
+    Returns a dictionary containing 
+    model_state_dict, optimizer_state_dict, epoch, lr as keys
+    """
+    return torch.load(path)
